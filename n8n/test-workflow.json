@@ -1,0 +1,89 @@
+{
+  "name": "Test: Webhook → Email Notification",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "test-lead",
+        "responseMode": "onReceived",
+        "responseData": "allEntries"
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "test-lead-webhook"
+    },
+    {
+      "parameters": {
+        "fromEmail": "noreply@agency.com",
+        "toEmail": "={{ $json[\"email\"] || \"test@example.com\" }}",
+        "subject": "New Lead: {{ $json[\"name\"] || \"Test Lead\" }}",
+        "text": "=New lead received!\n\nName: {{ $json[\"name\"] || \"Test\" }}\nEmail: {{ $json[\"email\"] || \"test@example.com\" }}\nMessage: {{ $json[\"message\"] || \"Test message\" }}\n\nThis is an automated notification from the AI Chatbot Agency system."
+      },
+      "id": "send-email",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [500, 300],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-credential",
+          "name": "SMTP Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "status",
+              "value": "Lead captured and email sent"
+            }
+          ]
+        }
+      },
+      "id": "set-response",
+      "name": "Set Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [750, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "main": [
+        [
+          {
+            "node": "Set Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": ["test", "lead-capture"],
+  "meta": {
+    "instanceId": "ai-chatbot-agency",
+    "templateCreatedBy": "AI Chatbot Agency FS"
+  },
+  "_comment": "SETUP INSTRUCTIONS: 1) Import this workflow in n8n (Workflows → Import → paste JSON). 2) Set up SMTP credentials (Settings → Credentials → Add → SMTP). 3) Activate the workflow. 4) Test with: curl -X POST https://<your-n8n-url>/webhook/test-lead -H 'Content-Type: application/json' -d '{\"name\":\"Test User\",\"email\":\"your@email.com\",\"message\":\"Hello from chatbot\"}'. 5) Verify email arrives. Story 5 (ITT-28) will replace this with the production lead capture workflow."
+}
