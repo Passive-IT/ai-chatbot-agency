@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: flowise
+    runtime: image
+    image:
+      url: docker.io/flowiseai/flowise:latest
+    plan: free
+    envVars:
+      - key: FLOWISE_USERNAME
+        sync: false
+      - key: FLOWISE_PASSWORD
+        sync: false
+      - key: FLOWISE_SECRETKEY_OVERWRITE
+        sync: false
+      - key: PORT
+        value: 3000
