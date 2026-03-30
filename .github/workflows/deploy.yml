@@ -1,0 +1,85 @@
+name: Deploy & Monitor
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Health check every 30 minutes to supplement UptimeRobot
+    - cron: '*/30 * * * *'
+
+env:
+  FLOWISE_URL: https://flowise-nxby.onrender.com
+  N8N_URL: https://n8n-nhbg.onrender.com
+
+jobs:
+  validate:
+    name: Validate configuration
+    runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate render.yaml syntax
+        run: |
+          python3 -c "
+          import yaml, sys
+          with open('render.yaml') as f:
+              data = yaml.safe_load(f)
+          services = data.get('services', [])
+          print(f'Found {len(services)} service(s) in render.yaml')
+          for svc in services:
+              print(f'  - {svc[\"name\"]} ({svc[\"type\"]})')
+          "
+
+      - name: Validate JSON files
+        run: |
+          for f in $(find . -name '*.json' -not -path './.git/*'); do
+            python3 -c "import json; json.load(open('$f'))" && echo "OK: $f" || echo "FAIL: $f"
+          done
+
+  deploy:
+    name: Deploy to Render
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Trigger Flowise redeploy
+        run: |
+          curl -s -X POST "https://api.render.com/v1/services/srv-d759n0adbo4c739a6hb0/deploys" \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"clearCache": "do_not_clear"}' \
+            -o /dev/null -w "Flowise deploy: HTTP %{http_code}\n"
+
+      - name: Trigger n8n redeploy
+        run: |
+          curl -s -X POST "https://api.render.com/v1/services/srv-d75b2rvfte5s73b05tj0/deploys" \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"clearCache": "do_not_clear"}' \
+            -o /dev/null -w "n8n deploy: HTTP %{http_code}\n"
+
+  health-check:
+    name: Health checks
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || (github.ref == 'refs/heads/main' && github.event_name == 'push')
+    steps:
+      - name: Check Flowise health
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 30 "$FLOWISE_URL/api/v1/ping")
+          if [ "$STATUS" = "200" ]; then
+            echo "Flowise is healthy (HTTP $STATUS)"
+          else
+            echo "::warning::Flowise health check failed (HTTP $STATUS)"
+          fi
+
+      - name: Check n8n health
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 30 "$N8N_URL/healthz")
+          if [ "$STATUS" = "200" ]; then
+            echo "n8n is healthy (HTTP $STATUS)"
+          else
+            echo "::warning::n8n health check failed (HTTP $STATUS)"
+          fi
