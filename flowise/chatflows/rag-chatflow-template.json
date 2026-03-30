@@ -1,0 +1,483 @@
+{
+  "nodes": [
+    {
+      "id": "chatGroq_0",
+      "position": { "x": 800, "y": 200 },
+      "type": "customNode",
+      "data": {
+        "id": "chatGroq_0",
+        "label": "ChatGroq",
+        "name": "chatGroq",
+        "version": 2,
+        "type": "ChatGroq",
+        "baseClasses": ["ChatGroq", "BaseChatModel", "BaseLanguageModel"],
+        "category": "Chat Models",
+        "description": "Groq Chat Model — Llama 3.3 70B",
+        "inputParams": [
+          {
+            "label": "Connect Credential",
+            "name": "credential",
+            "type": "credential",
+            "credentialNames": ["groqApi"]
+          },
+          {
+            "label": "Model Name",
+            "name": "modelName",
+            "type": "options",
+            "default": "llama-3.3-70b-versatile",
+            "options": [
+              { "label": "llama-3.3-70b-versatile", "name": "llama-3.3-70b-versatile" },
+              { "label": "llama-3.1-8b-instant", "name": "llama-3.1-8b-instant" }
+            ]
+          },
+          {
+            "label": "Temperature",
+            "name": "temperature",
+            "type": "number",
+            "default": 0.2,
+            "description": "Low temperature for factual document-grounded answers"
+          },
+          {
+            "label": "Max Tokens",
+            "name": "maxTokens",
+            "type": "number",
+            "default": 512
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "modelName": "llama-3.3-70b-versatile",
+          "temperature": 0.2,
+          "maxTokens": 512
+        },
+        "outputAnchors": [
+          {
+            "id": "chatGroq_0-output-chatGroq-ChatGroq",
+            "name": "chatGroq",
+            "label": "ChatGroq",
+            "type": "ChatGroq | BaseChatModel | BaseLanguageModel"
+          }
+        ],
+        "outputs": {}
+      }
+    },
+    {
+      "id": "faissVectorStore_0",
+      "position": { "x": 200, "y": 400 },
+      "type": "customNode",
+      "data": {
+        "id": "faissVectorStore_0",
+        "label": "Faiss Vector Store",
+        "name": "faissVectorStore",
+        "version": 1,
+        "type": "Faiss",
+        "baseClasses": ["Faiss", "VectorStore", "BaseRetriever"],
+        "category": "Vector Stores",
+        "description": "Local Faiss vector store — zero-cost, on-disk storage bundled with Flowise",
+        "inputParams": [
+          {
+            "label": "Base Path to store",
+            "name": "basePath",
+            "type": "string",
+            "description": "Path on the Flowise server where the vector index is stored. Use a unique name per client.",
+            "default": "/root/.flowise/vectorstore/CLIENT_NAME_HERE"
+          },
+          {
+            "label": "Top K",
+            "name": "topK",
+            "type": "number",
+            "default": 4,
+            "description": "Number of document chunks to retrieve per query"
+          }
+        ],
+        "inputAnchors": [
+          {
+            "label": "Embeddings",
+            "name": "embeddings",
+            "type": "Embeddings",
+            "id": "faissVectorStore_0-input-embeddings-Embeddings"
+          },
+          {
+            "label": "Document",
+            "name": "document",
+            "type": "Document",
+            "list": true,
+            "id": "faissVectorStore_0-input-document-Document"
+          }
+        ],
+        "inputs": {
+          "basePath": "/root/.flowise/vectorstore/CLIENT_NAME_HERE",
+          "topK": 4
+        },
+        "outputAnchors": [
+          {
+            "id": "faissVectorStore_0-output-retriever-Faiss",
+            "name": "retriever",
+            "label": "Faiss Retriever",
+            "type": "Faiss | VectorStore | BaseRetriever"
+          }
+        ],
+        "outputs": {
+          "output": "retriever"
+        }
+      }
+    },
+    {
+      "id": "huggingFaceEmbeddings_0",
+      "position": { "x": 200, "y": 200 },
+      "type": "customNode",
+      "data": {
+        "id": "huggingFaceEmbeddings_0",
+        "label": "HuggingFace Inference Embeddings",
+        "name": "huggingFaceInferenceEmbeddings",
+        "version": 1,
+        "type": "HuggingFaceInferenceEmbeddings",
+        "baseClasses": ["HuggingFaceInferenceEmbeddings", "Embeddings"],
+        "category": "Embeddings",
+        "description": "Free HuggingFace inference API for embeddings — zero cost",
+        "inputParams": [
+          {
+            "label": "Connect Credential",
+            "name": "credential",
+            "type": "credential",
+            "credentialNames": ["huggingFaceApi"],
+            "optional": true
+          },
+          {
+            "label": "Model",
+            "name": "model",
+            "type": "string",
+            "default": "sentence-transformers/all-MiniLM-L6-v2",
+            "description": "Small, fast, high-quality embedding model"
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "model": "sentence-transformers/all-MiniLM-L6-v2"
+        },
+        "outputAnchors": [
+          {
+            "id": "huggingFaceEmbeddings_0-output-embeddings",
+            "name": "embeddings",
+            "label": "HuggingFace Embeddings",
+            "type": "HuggingFaceInferenceEmbeddings | Embeddings"
+          }
+        ],
+        "outputs": {}
+      }
+    },
+    {
+      "id": "pdfFile_0",
+      "position": { "x": -200, "y": 100 },
+      "type": "customNode",
+      "data": {
+        "id": "pdfFile_0",
+        "label": "Pdf File",
+        "name": "pdfFile",
+        "version": 1,
+        "type": "Document",
+        "baseClasses": ["Document"],
+        "category": "Document Loaders",
+        "description": "Load PDF documents for the client knowledge base",
+        "inputParams": [
+          {
+            "label": "Pdf File",
+            "name": "pdfFile",
+            "type": "file",
+            "fileType": ".pdf",
+            "description": "Upload up to 10 PDFs (menus, FAQs, policies, etc.)"
+          },
+          {
+            "label": "Usage",
+            "name": "usage",
+            "type": "options",
+            "default": "perFile",
+            "options": [
+              { "label": "One document per page", "name": "perPage" },
+              { "label": "One document per file", "name": "perFile" }
+            ]
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "usage": "perFile"
+        },
+        "outputAnchors": [
+          {
+            "id": "pdfFile_0-output-document-Document",
+            "name": "document",
+            "label": "Document",
+            "type": "Document"
+          }
+        ],
+        "outputs": {}
+      }
+    },
+    {
+      "id": "plainText_0",
+      "position": { "x": -200, "y": 300 },
+      "type": "customNode",
+      "data": {
+        "id": "plainText_0",
+        "label": "Plain Text",
+        "name": "plainText",
+        "version": 1,
+        "type": "Document",
+        "baseClasses": ["Document"],
+        "category": "Document Loaders",
+        "description": "Paste plain text content directly (FAQs, policies, hours, etc.)",
+        "inputParams": [
+          {
+            "label": "Text",
+            "name": "text",
+            "type": "string",
+            "rows": 10,
+            "placeholder": "Paste FAQ text, business hours, menu items, or any knowledge base content here..."
+          },
+          {
+            "label": "Metadata",
+            "name": "metadata",
+            "type": "json",
+            "optional": true
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "text": ""
+        },
+        "outputAnchors": [
+          {
+            "id": "plainText_0-output-document-Document",
+            "name": "document",
+            "label": "Document",
+            "type": "Document"
+          }
+        ],
+        "outputs": {}
+      }
+    },
+    {
+      "id": "docxFile_0",
+      "position": { "x": -200, "y": 500 },
+      "type": "customNode",
+      "data": {
+        "id": "docxFile_0",
+        "label": "Docx File",
+        "name": "docxFile",
+        "version": 1,
+        "type": "Document",
+        "baseClasses": ["Document"],
+        "category": "Document Loaders",
+        "description": "Load DOCX documents for the client knowledge base",
+        "inputParams": [
+          {
+            "label": "Docx File",
+            "name": "docxFile",
+            "type": "file",
+            "fileType": ".docx",
+            "description": "Upload up to 10 DOCX files"
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {},
+        "outputAnchors": [
+          {
+            "id": "docxFile_0-output-document-Document",
+            "name": "document",
+            "label": "Document",
+            "type": "Document"
+          }
+        ],
+        "outputs": {}
+      }
+    },
+    {
+      "id": "recursiveCharacterTextSplitter_0",
+      "position": { "x": 100, "y": 600 },
+      "type": "customNode",
+      "data": {
+        "id": "recursiveCharacterTextSplitter_0",
+        "label": "Recursive Character Text Splitter",
+        "name": "recursiveCharacterTextSplitter",
+        "version": 2,
+        "type": "RecursiveCharacterTextSplitter",
+        "baseClasses": ["RecursiveCharacterTextSplitter", "TextSplitter"],
+        "category": "Text Splitters",
+        "description": "Split documents into chunks for embedding",
+        "inputParams": [
+          {
+            "label": "Chunk Size",
+            "name": "chunkSize",
+            "type": "number",
+            "default": 500
+          },
+          {
+            "label": "Chunk Overlap",
+            "name": "chunkOverlap",
+            "type": "number",
+            "default": 50
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "chunkSize": 500,
+          "chunkOverlap": 50
+        },
+        "outputAnchors": [
+          {
+            "id": "recursiveCharacterTextSplitter_0-output-splitter",
+            "name": "textSplitter",
+            "label": "Text Splitter",
+            "type": "RecursiveCharacterTextSplitter | TextSplitter"
+          }
+        ],
+        "outputs": {}
+      }
+    },
+    {
+      "id": "conversationalRetrievalQAChain_0",
+      "position": { "x": 1100, "y": 400 },
+      "type": "customNode",
+      "data": {
+        "id": "conversationalRetrievalQAChain_0",
+        "label": "Conversational Retrieval QA Chain",
+        "name": "conversationalRetrievalQAChain",
+        "version": 3,
+        "type": "ConversationalRetrievalQAChain",
+        "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain"],
+        "category": "Chains",
+        "description": "Retrieves relevant documents then answers with conversational memory",
+        "inputParams": [
+          {
+            "label": "System Message",
+            "name": "systemMessagePrompt",
+            "type": "string",
+            "rows": 6,
+            "default": "You are a helpful assistant for [CLIENT NAME]. Answer questions only using the provided documents. If the answer is not in the documents, say: \"I don't have that information. Please contact us directly at [CONTACT_INFO].\"\n\nBe concise, friendly, and professional. Do not make up information.",
+            "description": "CUSTOMIZE: Replace [CLIENT NAME] and [CONTACT_INFO] for each client deployment."
+          },
+          {
+            "label": "Return Source Documents",
+            "name": "returnSourceDocuments",
+            "type": "boolean",
+            "default": false
+          }
+        ],
+        "inputAnchors": [
+          {
+            "label": "Language Model",
+            "name": "model",
+            "type": "BaseChatModel",
+            "id": "conversationalRetrievalQAChain_0-input-model-BaseChatModel"
+          },
+          {
+            "label": "Vector Store Retriever",
+            "name": "vectorStoreRetriever",
+            "type": "BaseRetriever",
+            "id": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever"
+          },
+          {
+            "label": "Memory",
+            "name": "memory",
+            "type": "BaseMemory",
+            "optional": true,
+            "id": "conversationalRetrievalQAChain_0-input-memory-BaseMemory"
+          }
+        ],
+        "inputs": {
+          "systemMessagePrompt": "You are a helpful assistant for [CLIENT NAME]. Answer questions only using the provided documents. If the answer is not in the documents, say: \"I don't have that information. Please contact us directly at [CONTACT_INFO].\"\n\nBe concise, friendly, and professional. Do not make up information.",
+          "returnSourceDocuments": false
+        },
+        "outputAnchors": [
+          {
+            "id": "conversationalRetrievalQAChain_0-output-chain",
+            "name": "chain",
+            "label": "ConversationalRetrievalQAChain",
+            "type": "ConversationalRetrievalQAChain | BaseChain"
+          }
+        ],
+        "outputs": {}
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "huggingFaceEmbeddings_0",
+      "sourceHandle": "huggingFaceEmbeddings_0-output-embeddings",
+      "target": "faissVectorStore_0",
+      "targetHandle": "faissVectorStore_0-input-embeddings-Embeddings",
+      "type": "buttonedge",
+      "id": "huggingFaceEmbeddings_0-faissVectorStore_0"
+    },
+    {
+      "source": "pdfFile_0",
+      "sourceHandle": "pdfFile_0-output-document-Document",
+      "target": "faissVectorStore_0",
+      "targetHandle": "faissVectorStore_0-input-document-Document",
+      "type": "buttonedge",
+      "id": "pdfFile_0-faissVectorStore_0"
+    },
+    {
+      "source": "plainText_0",
+      "sourceHandle": "plainText_0-output-document-Document",
+      "target": "faissVectorStore_0",
+      "targetHandle": "faissVectorStore_0-input-document-Document",
+      "type": "buttonedge",
+      "id": "plainText_0-faissVectorStore_0"
+    },
+    {
+      "source": "docxFile_0",
+      "sourceHandle": "docxFile_0-output-document-Document",
+      "target": "faissVectorStore_0",
+      "targetHandle": "faissVectorStore_0-input-document-Document",
+      "type": "buttonedge",
+      "id": "docxFile_0-faissVectorStore_0"
+    },
+    {
+      "source": "recursiveCharacterTextSplitter_0",
+      "sourceHandle": "recursiveCharacterTextSplitter_0-output-splitter",
+      "target": "faissVectorStore_0",
+      "targetHandle": "faissVectorStore_0-input-document-Document",
+      "type": "buttonedge",
+      "id": "recursiveCharacterTextSplitter_0-faissVectorStore_0"
+    },
+    {
+      "source": "faissVectorStore_0",
+      "sourceHandle": "faissVectorStore_0-output-retriever-Faiss",
+      "target": "conversationalRetrievalQAChain_0",
+      "targetHandle": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
+      "type": "buttonedge",
+      "id": "faissVectorStore_0-conversationalRetrievalQAChain_0"
+    },
+    {
+      "source": "chatGroq_0",
+      "sourceHandle": "chatGroq_0-output-chatGroq-ChatGroq",
+      "target": "conversationalRetrievalQAChain_0",
+      "targetHandle": "conversationalRetrievalQAChain_0-input-model-BaseChatModel",
+      "type": "buttonedge",
+      "id": "chatGroq_0-conversationalRetrievalQAChain_0"
+    }
+  ],
+  "chatbotConfig": {
+    "welcomeMessage": "Hi! I'm the AI assistant for [CLIENT NAME]. How can I help you today?",
+    "backgroundColor": "#ffffff",
+    "fontSize": 16
+  },
+  "_meta": {
+    "templateVersion": "1.0",
+    "createdBy": "AI Chatbot Agency FS",
+    "description": "Reusable RAG chatflow template. Duplicate this for each client. Update: (1) basePath in Faiss node to a unique client folder, (2) systemMessagePrompt with client name and contact info, (3) upload client documents via PDF/DOCX/Plain Text nodes.",
+    "perClientCustomizations": [
+      "faissVectorStore_0.inputs.basePath → /root/.flowise/vectorstore/<CLIENT_SLUG>",
+      "conversationalRetrievalQAChain_0.inputs.systemMessagePrompt → replace [CLIENT NAME] and [CONTACT_INFO]",
+      "chatbotConfig.welcomeMessage → replace [CLIENT NAME]",
+      "Upload client knowledge base documents (PDF, DOCX, or plain text)"
+    ],
+    "costProfile": {
+      "llm": "Groq free tier — 14,400 req/day",
+      "embeddings": "HuggingFace free inference API",
+      "vectorStore": "Faiss on Flowise server disk — zero cost",
+      "total": "Zero cost"
+    }
+  }
+}

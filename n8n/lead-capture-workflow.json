@@ -1,0 +1,185 @@
+{
+  "name": "Lead Capture: Chatbot → Email Notification",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-capture",
+        "responseMode": "onReceived",
+        "responseData": "allEntries",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "lead-capture-webhook"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "visitorName",
+              "value": "={{ $json[\"name\"] || $json[\"visitorName\"] || \"Unknown\" }}"
+            },
+            {
+              "name": "visitorEmail",
+              "value": "={{ $json[\"email\"] || $json[\"visitorEmail\"] || \"\" }}"
+            },
+            {
+              "name": "visitorPhone",
+              "value": "={{ $json[\"phone\"] || $json[\"visitorPhone\"] || \"\" }}"
+            },
+            {
+              "name": "messageSummary",
+              "value": "={{ $json[\"message\"] || $json[\"messageSummary\"] || $json[\"summary\"] || \"No message provided\" }}"
+            },
+            {
+              "name": "clientName",
+              "value": "={{ $json[\"clientName\"] || $json[\"businessName\"] || \"Your Business\" }}"
+            },
+            {
+              "name": "clientEmail",
+              "value": "={{ $json[\"clientEmail\"] || $json[\"notifyEmail\"] || \"CLIENT_EMAIL_HERE\" }}"
+            },
+            {
+              "name": "timestamp",
+              "value": "={{ $now.toFormat(\"yyyy-MM-dd HH:mm:ss\") }}"
+            },
+            {
+              "name": "source",
+              "value": "={{ $json[\"source\"] || \"AI Chatbot\" }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "extract-lead-data",
+      "name": "Extract Lead Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.SMTP_FROM_EMAIL }}",
+        "toEmail": "={{ $json[\"clientEmail\"] }}",
+        "subject": "=New lead from {{ $json[\"clientName\"] }} chatbot",
+        "emailFormat": "html",
+        "html": "=<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: Arial, sans-serif; color: #333; margin: 0; padding: 0; }\n    .container { max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; }\n    .header { background: #2563eb; color: white; padding: 16px 20px; border-radius: 6px 6px 0 0; margin: -20px -20px 20px; }\n    .header h2 { margin: 0; font-size: 18px; }\n    .field { margin-bottom: 12px; }\n    .label { font-weight: bold; color: #555; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }\n    .value { margin-top: 2px; font-size: 15px; }\n    .divider { border-top: 1px solid #e0e0e0; margin: 16px 0; }\n    .footer { font-size: 11px; color: #999; margin-top: 20px; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <h2>📬 New Lead — {{ $json[\"clientName\"] }}</h2>\n    </div>\n    <div class=\"field\">\n      <div class=\"label\">Visitor Name</div>\n      <div class=\"value\">{{ $json[\"visitorName\"] }}</div>\n    </div>\n    <div class=\"field\">\n      <div class=\"label\">Email</div>\n      <div class=\"value\">{{ $json[\"visitorEmail\"] || \"—\" }}</div>\n    </div>\n    <div class=\"field\">\n      <div class=\"label\">Phone</div>\n      <div class=\"value\">{{ $json[\"visitorPhone\"] || \"—\" }}</div>\n    </div>\n    <div class=\"divider\"></div>\n    <div class=\"field\">\n      <div class=\"label\">Message / Enquiry Summary</div>\n      <div class=\"value\">{{ $json[\"messageSummary\"] }}</div>\n    </div>\n    <div class=\"divider\"></div>\n    <div class=\"field\">\n      <div class=\"label\">Received At</div>\n      <div class=\"value\">{{ $json[\"timestamp\"] }}</div>\n    </div>\n    <div class=\"field\">\n      <div class=\"label\">Source</div>\n      <div class=\"value\">{{ $json[\"source\"] }}</div>\n    </div>\n    <div class=\"footer\">Automated notification from {{ $json[\"clientName\"] }} AI Chatbot — powered by AI Chatbot Agency</div>\n  </div>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "send-lead-email",
+      "name": "Send Lead Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [750, 300],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-credential",
+          "name": "Gmail SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "status",
+              "value": "success"
+            },
+            {
+              "name": "message",
+              "value": "Lead captured and notification sent"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "webhook-response",
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [1000, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract Lead Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Lead Data": {
+      "main": [
+        [
+          {
+            "node": "Send Lead Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Lead Email": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "tags": ["lead-capture", "chatbot", "email"],
+  "meta": {
+    "instanceId": "ai-chatbot-agency",
+    "templateCreatedBy": "AI Chatbot Agency FS",
+    "templateVersion": "1.0",
+    "description": "Production lead capture workflow. Triggered by Flowise webhook when a visitor submits contact info. Extracts lead data, sends a formatted HTML email to the configured client address."
+  },
+  "_setup": {
+    "steps": [
+      "1. Import this workflow in n8n: Workflows → Import From File (or paste JSON).",
+      "2. Create SMTP credentials: Settings → Credentials → Add Credential → choose 'Email (SMTP)'.",
+      "   - For Gmail: host=smtp.gmail.com, port=465, SSL=true, user=your@gmail.com, password=<app-password>.",
+      "3. Set environment variable SMTP_FROM_EMAIL in Render: the Gmail address used for sending.",
+      "4. In 'Extract Lead Data' node, update the 'clientEmail' fallback to the client's notification address,",
+      "   OR pass 'clientEmail' dynamically from the Flowise chatflow webhook payload.",
+      "5. Activate the workflow — the webhook URL will be: https://<your-n8n-url>/webhook/lead-capture",
+      "6. Configure Flowise chatflow to POST to this webhook URL when lead data is collected.",
+      "7. Test: POST to the webhook with sample payload (see _testPayload below).",
+      "8. Verify email arrives within 60 seconds."
+    ],
+    "testPayload": {
+      "name": "Jane Smith",
+      "email": "jane@example.com",
+      "phone": "+1-555-0100",
+      "message": "Hi, I'm interested in a table for 4 on Friday evening.",
+      "clientName": "Demo Restaurant",
+      "clientEmail": "owner@demorestaurant.com",
+      "source": "Website Chatbot"
+    },
+    "flowioseWebhookConfig": {
+      "note": "In the Flowise chatflow, add a 'Custom Tool' or 'HTTP Request' node that POSTs to this webhook URL with the lead payload above when the user provides their contact info.",
+      "webhookPath": "/webhook/lead-capture"
+    }
+  }
+}
