@@ -353,8 +353,8 @@
             "name": "systemMessagePrompt",
             "type": "string",
             "rows": 6,
-            "default": "You are a helpful assistant for [CLIENT NAME]. Answer questions only using the provided documents. If the answer is not in the documents, say: \"I don't have that information. Please contact us directly at [CONTACT_INFO].\"\n\nBe concise, friendly, and professional. Do not make up information.",
-            "description": "CUSTOMIZE: Replace [CLIENT NAME] and [CONTACT_INFO] for each client deployment."
+            "default": "You are a helpful assistant for [CLIENT NAME]. Answer questions only using the provided documents. If the answer is not in the documents, say: \"I don't have that information. Please contact us directly at [CONTACT_INFO].\"\n\nBe concise, friendly, and professional. Do not make up information.\n\n## Human Handoff\nIf the user asks to speak to a human, real person, agent, or says \"help me\" in a way that indicates they want human assistance, respond with:\n\"I'd be happy to connect you with our team! To make sure someone gets back to you quickly, could you please share:\n1. Your name\n2. Your phone number or email\n\nOnce you provide those details, our team will reach out to you shortly.\"\n\nAfter the user provides their contact information, confirm receipt and say: \"Thank you! Our team at [CLIENT NAME] will contact you soon. Is there anything else I can help with in the meantime?\"\n\n[HANDOFF_MESSAGE_OVERRIDE]",
+            "description": "CUSTOMIZE: Replace [CLIENT NAME], [CONTACT_INFO], and optionally [HANDOFF_MESSAGE_OVERRIDE] for each client."
           },
           {
             "label": "Return Source Documents",
@@ -385,7 +385,7 @@
           }
         ],
         "inputs": {
-          "systemMessagePrompt": "You are a helpful assistant for [CLIENT NAME]. Answer questions only using the provided documents. If the answer is not in the documents, say: \"I don't have that information. Please contact us directly at [CONTACT_INFO].\"\n\nBe concise, friendly, and professional. Do not make up information.",
+          "systemMessagePrompt": "You are a helpful assistant for [CLIENT NAME]. Answer questions only using the provided documents. If the answer is not in the documents, say: \"I don't have that information. Please contact us directly at [CONTACT_INFO].\"\n\nBe concise, friendly, and professional. Do not make up information.\n\n## Human Handoff\nIf the user asks to speak to a human, real person, agent, or says \"help me\" in a way that indicates they want human assistance, respond with:\n\"I'd be happy to connect you with our team! To make sure someone gets back to you quickly, could you please share:\n1. Your name\n2. Your phone number or email\n\nOnce you provide those details, our team will reach out to you shortly.\"\n\nAfter the user provides their contact information, confirm receipt and say: \"Thank you! Our team at [CLIENT NAME] will contact you soon. Is there anything else I can help with in the meantime?\"\n\n[HANDOFF_MESSAGE_OVERRIDE]",
           "returnSourceDocuments": false
         },
         "outputAnchors": [
@@ -469,7 +469,7 @@
     "description": "Reusable RAG chatflow template. Duplicate this for each client. Update: (1) basePath in Faiss node to a unique client folder, (2) systemMessagePrompt with client name and contact info, (3) upload client documents via PDF/DOCX/Plain Text nodes.",
     "perClientCustomizations": [
       "faissVectorStore_0.inputs.basePath → /root/.flowise/vectorstore/<CLIENT_SLUG>",
-      "conversationalRetrievalQAChain_0.inputs.systemMessagePrompt → replace [CLIENT NAME] and [CONTACT_INFO]",
+      "conversationalRetrievalQAChain_0.inputs.systemMessagePrompt → replace [CLIENT NAME], [CONTACT_INFO], and optionally [HANDOFF_MESSAGE_OVERRIDE]",
       "chatbotConfig.welcomeMessage → replace [CLIENT NAME]",
       "Upload client knowledge base documents (PDF, DOCX, or plain text)"
     ],
