@@ -1,0 +1,172 @@
+{
+  "nodes": [
+    {
+      "id": "chatGroq_0",
+      "position": { "x": 300, "y": 200 },
+      "type": "customNode",
+      "data": {
+        "id": "chatGroq_0",
+        "label": "ChatGroq",
+        "name": "chatGroq",
+        "version": 2,
+        "type": "ChatGroq",
+        "baseClasses": ["ChatGroq", "BaseChatModel", "BaseLanguageModel"],
+        "category": "Chat Models",
+        "description": "Groq Chat Model — Llama 3.3 70B (zero-cost, 14,400 RPD)",
+        "inputParams": [
+          {
+            "label": "Connect Credential",
+            "name": "credential",
+            "type": "credential",
+            "credentialNames": ["groqApi"]
+          },
+          {
+            "label": "Model Name",
+            "name": "modelName",
+            "type": "options",
+            "options": [
+              { "label": "llama-3.3-70b-versatile", "name": "llama-3.3-70b-versatile" },
+              { "label": "llama-3.1-8b-instant", "name": "llama-3.1-8b-instant" }
+            ],
+            "default": "llama-3.3-70b-versatile"
+          },
+          {
+            "label": "Temperature",
+            "name": "temperature",
+            "type": "number",
+            "default": 0.7,
+            "optional": true
+          },
+          {
+            "label": "Max Tokens",
+            "name": "maxTokens",
+            "type": "number",
+            "optional": true,
+            "additionalParams": true
+          },
+          {
+            "label": "Top Probability",
+            "name": "topP",
+            "type": "number",
+            "optional": true,
+            "additionalParams": true
+          },
+          {
+            "label": "Streaming",
+            "name": "streaming",
+            "type": "boolean",
+            "default": true,
+            "optional": true
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "modelName": "llama-3.3-70b-versatile",
+          "temperature": 0.7,
+          "streaming": true
+        },
+        "outputAnchors": [
+          {
+            "id": "chatGroq_0-output-chatGroq-ChatGroq|BaseChatModel|BaseLanguageModel",
+            "name": "chatGroq",
+            "label": "ChatGroq",
+            "description": "Groq Chat Model — Llama 3.3 70B",
+            "type": "ChatGroq | BaseChatModel | BaseLanguageModel"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 430,
+      "selected": false,
+      "positionAbsolute": { "x": 300, "y": 200 },
+      "dragging": false
+    },
+    {
+      "id": "conversationChain_0",
+      "position": { "x": 700, "y": 200 },
+      "type": "customNode",
+      "data": {
+        "id": "conversationChain_0",
+        "label": "Conversation Chain",
+        "name": "conversationChain",
+        "version": 3,
+        "type": "ConversationChain",
+        "baseClasses": ["ConversationChain", "LLMChain", "BaseChain"],
+        "category": "Chains",
+        "description": "Chat models specific chain with memory and a system prompt",
+        "inputParams": [
+          {
+            "label": "System Message",
+            "name": "systemMessagePrompt",
+            "type": "string",
+            "rows": 4,
+            "default": "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.",
+            "optional": true
+          }
+        ],
+        "inputAnchors": [
+          {
+            "label": "Chat Model",
+            "name": "model",
+            "type": "BaseChatModel",
+            "id": "conversationChain_0-input-model-BaseChatModel"
+          },
+          {
+            "label": "Memory",
+            "name": "memory",
+            "type": "BaseMemory",
+            "optional": true,
+            "id": "conversationChain_0-input-memory-BaseMemory"
+          },
+          {
+            "label": "Chat Prompt Template",
+            "name": "chatPromptTemplate",
+            "type": "ChatPromptTemplate",
+            "optional": true,
+            "id": "conversationChain_0-input-chatPromptTemplate-ChatPromptTemplate"
+          },
+          {
+            "label": "Input Moderation",
+            "name": "inputModeration",
+            "type": "Moderation",
+            "optional": true,
+            "list": true,
+            "id": "conversationChain_0-input-inputModeration-Moderation"
+          }
+        ],
+        "inputs": {
+          "systemMessagePrompt": "You are a helpful AI assistant. Answer questions clearly and concisely.",
+          "model": "{{chatGroq_0.data.instance}}"
+        },
+        "outputAnchors": [
+          {
+            "id": "conversationChain_0-output-conversationChain-ConversationChain|LLMChain|BaseChain",
+            "name": "conversationChain",
+            "label": "ConversationChain",
+            "type": "ConversationChain | LLMChain | BaseChain"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 430,
+      "selected": false,
+      "positionAbsolute": { "x": 700, "y": 200 },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "source": "chatGroq_0",
+      "sourceHandle": "chatGroq_0-output-chatGroq-ChatGroq|BaseChatModel|BaseLanguageModel",
+      "target": "conversationChain_0",
+      "targetHandle": "conversationChain_0-input-model-BaseChatModel",
+      "type": "buttonedge",
+      "id": "chatGroq_0-chatGroq_0-output-chatGroq-ChatGroq|BaseChatModel|BaseLanguageModel-conversationChain_0-conversationChain_0-input-model-BaseChatModel",
+      "data": { "label": "" }
+    }
+  ]
+}
