@@ -1,16 +1,75 @@
 services:
+  # ─────────────────────────────────────────
+  # Service 1: Flowise (AI Chatbot Builder)
+  # Story 1 — ITT-24
+  # ─────────────────────────────────────────
   - type: web
     name: flowise
     runtime: image
     image:
       url: docker.io/flowiseai/flowise:latest
     plan: free
+    healthCheckPath: /api/v1/ping
     envVars:
-      - key: FLOWISE_USERNAME
-        sync: false
-      - key: FLOWISE_PASSWORD
-        sync: false
-      - key: FLOWISE_SECRETKEY_OVERWRITE
-        sync: false
       - key: PORT
         value: 3000
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=384
+      - key: FLOWISE_USERNAME
+        sync: false   # Set in Render dashboard: agency admin username
+      - key: FLOWISE_PASSWORD
+        sync: false   # Set in Render dashboard: strong password
+      - key: FLOWISE_SECRETKEY_OVERWRITE
+        sync: false   # Set in Render dashboard: random 32-char string (openssl rand -hex 16)
+      - key: DATABASE_PATH
+        value: /opt/render/project/.flowise
+      - key: SECRETKEY_PATH
+        value: /opt/render/project/.flowise
+      - key: LOG_PATH
+        value: /opt/render/project/.flowise/logs
+      - key: BLOB_STORAGE_PATH
+        value: /opt/render/project/.flowise/storage
+      # Story 3 — ITT-26: Groq LLM key (set after Groq account created)
+      - key: GROQ_API_KEY
+        sync: false   # Set in Render dashboard after Groq account setup
+
+  # ─────────────────────────────────────────
+  # Service 2: n8n (Workflow Automation)
+  # Story 2 — ITT-25
+  # ─────────────────────────────────────────
+  - type: web
+    name: n8n
+    runtime: image
+    image:
+      url: docker.io/n8nio/n8n:latest
+    plan: free
+    healthCheckPath: /healthz
+    envVars:
+      - key: DB_TYPE
+        value: postgresdb
+      - key: DB_POSTGRESDB_HOST
+        sync: false   # Supabase host: db.<project-ref>.supabase.co
+      - key: DB_POSTGRESDB_PORT
+        value: 5432
+      - key: DB_POSTGRESDB_DATABASE
+        value: postgres
+      - key: DB_POSTGRESDB_USER
+        value: postgres
+      - key: DB_POSTGRESDB_PASSWORD
+        sync: false   # Supabase database password (set during project creation)
+      - key: DB_POSTGRESDB_SSL_REJECT_UNAUTHORIZED
+        value: false
+      - key: N8N_BASIC_AUTH_ACTIVE
+        value: true
+      - key: N8N_BASIC_AUTH_USER
+        sync: false   # Set in Render dashboard: agency admin username
+      - key: N8N_BASIC_AUTH_PASSWORD
+        sync: false   # Set in Render dashboard: strong password
+      - key: WEBHOOK_URL
+        sync: false   # Set AFTER first deploy: https://<your-n8n-render-url>/
+      - key: N8N_HOST
+        sync: false   # Same as WEBHOOK_URL host (e.g. n8n-xxxx.onrender.com)
+      - key: N8N_PROTOCOL
+        value: https
+      - key: NODE_FUNCTION_ALLOW_EXTERNAL
+        value: '*'

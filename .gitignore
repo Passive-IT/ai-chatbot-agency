@@ -1,0 +1,15 @@
+# Environment variables — never commit
+.env
+.env.local
+flowise/.env
+n8n/.env
+
+# Flowise data (local dev only)
+.flowise/
+
+# n8n data (local dev only)
+.n8n/
+
+# OS
+.DS_Store
+Thumbs.db
