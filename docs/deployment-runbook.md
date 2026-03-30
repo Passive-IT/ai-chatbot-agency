@@ -68,6 +68,7 @@ Before deploying, the board must create the following free accounts and collect 
 | Variable | Value |
 |----------|-------|
 | `PORT` | `3000` |
+| `NODE_OPTIONS` | `--max-old-space-size=384` (prevents OOM on 512MB free tier) |
 | `FLOWISE_USERNAME` | `admin` (or your choice) |
 | `FLOWISE_PASSWORD` | Strong password (min 12 chars) |
 | `FLOWISE_SECRETKEY_OVERWRITE` | Run `openssl rand -hex 16` → paste result |
@@ -179,3 +180,48 @@ Once accounts are set up, share the following with the FS agent via secure chann
 - [ ] UptimeRobot monitor active for n8n
 - [ ] Groq LLM test chatflow responds correctly
 - [ ] All credentials stored as env vars (none hardcoded)
+
+---
+
+## Monitoring & Health Checks
+
+### Render Built-in Health Checks
+Both services have health check paths configured in `render.yaml`:
+- **Flowise:** `/api/v1/ping` — returns `{"ping":"pong"}` when healthy
+- **n8n:** `/healthz` — returns 200 when healthy
+
+Render automatically restarts a service if the health check fails consecutively. This is available on all plans including free tier.
+
+### UptimeRobot Keep-Alive Monitors
+Render free tier services sleep after 15 minutes of inactivity. UptimeRobot pings every 5 minutes to prevent this:
+- **Flowise Keep-Alive:** `https://<flowise-url>/api/v1/ping` (HTTP, 5-min interval)
+- **n8n Keep-Alive:** `https://<n8n-url>/healthz` (HTTP, 5-min interval)
+
+Configure alert contacts in UptimeRobot to receive email/webhook notifications on downtime.
+
+### Escalation Path
+1. **Auto-recovery:** Render restarts the service on health check failure
+2. **Alert:** UptimeRobot sends downtime notification within 5 minutes
+3. **Manual check:** Visit Render dashboard → service logs for crash details
+4. **Escalate:** If the service won't recover after restart, check for OOM errors (see troubleshooting below) and escalate to DevOps
+
+---
+
+## Troubleshooting
+
+### Flowise OOM (JavaScript heap out of memory)
+**Symptoms:** Logs show `FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory`, exit code 139.
+
+**Cause:** Flowise exceeds the V8 heap limit on Render's 512MB free tier instance.
+
+**Fix:** Set `NODE_OPTIONS=--max-old-space-size=384` as a Render environment variable. This caps the V8 heap at 384MB, leaving ~128MB for the OS and other overhead.
+
+**If still OOM after setting NODE_OPTIONS:**
+1. Try reducing to `--max-old-space-size=350`
+2. Check if Flowise has a `lite` Docker tag with fewer bundled components
+3. Last resort: migrate to Railway free tier ($5/mo credit, better memory management)
+
+### Render "No open ports detected"
+**Cause:** Service hasn't started listening on the configured PORT yet. This is normal during startup — Render scans for open ports and will retry.
+
+**Fix:** Ensure `PORT=3000` is set. If the message persists after 60s, check for startup crashes in the logs.
